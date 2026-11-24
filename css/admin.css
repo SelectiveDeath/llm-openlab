@@ -1,0 +1,14 @@
+/* 관리자 패널 */
+#admin { max-width: 960px; margin: 0 auto; padding: 2rem 1.4rem; }
+.admin-login { max-width: 22rem; margin: 18vh auto 0; display: flex; flex-direction: column; gap: .8rem; text-align: center; }
+.admin-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.admin-head h1 { margin: 0; }
+.admin-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.btn.on { border-color: var(--win); }
+.btn.off { border-color: var(--red); }
+.btn.danger:hover { background: rgba(251, 113, 133, .2); }
+.admin-table { width: 100%; border-collapse: collapse; margin-top: .6rem; }
+.admin-table th, .admin-table td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
+.admin-table th { color: var(--ink-3); font-weight: 700; font-size: .85rem; }
+.hidden-row td { opacity: .4; text-decoration: line-through; }
+.hidden-row td:last-child { text-decoration: none; opacity: 1; }

@@ -1,0 +1,13 @@
+# Cloudflare Worker 로컬 개발 파일 (.dev.vars에는 키가 들어감)
+worker/.dev.vars
+worker/.wrangler/
+
+# 키 (절대 커밋 금지)
+*.key
+.dev-key*
+
+node_modules/
+.DS_Store
+Thumbs.db
+.claude/
+__pycache__/

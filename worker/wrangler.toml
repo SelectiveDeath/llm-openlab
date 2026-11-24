@@ -1,0 +1,21 @@
+name = "llm-openlab"
+main = "worker.js"
+compatibility_date = "2026-08-01"
+workers_dev = true
+preview_urls = false
+
+[vars]
+LOW_MODEL = "gpt-4o-mini"
+TOP_MODEL = "gpt-6-astra"
+JUDGE_MODEL = "gpt-5.4-mini"
+ALLOWED_ORIGINS = "https://selectivedeath.github.io, http://localhost:3001"
+
+# OpenAI 키와 관리자 비밀번호는 여기에 쓰지 않는다. 아래 명령으로 비밀값으로 넣는다.
+#   npx wrangler secret put OPENAI_API_KEY
+#   npx wrangler secret put ADMIN_PASSWORD
+
+# 랭킹과 설정을 모든 노트북이 공유하는 데이터베이스 (표 구조: schema.sql)
+[[d1_databases]]
+binding = "DB"
+database_name = "llm-openlab"
+database_id = "bdcc74f7-5422-4649-a5eb-80aca417ce15"
