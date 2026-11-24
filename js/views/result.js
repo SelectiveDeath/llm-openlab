@@ -70,9 +70,9 @@ function side(tier, s, bonus) {
 }
 
 function summary({ low, top }) {
-  if (low.fooled && !top.fooled) return `같은 미션인데 ${MODELS.low.name}는 넘어가고, ${MODELS.top.name}는 넘어가지 않았어요.`;
-  if (low.fooled && top.fooled && top.q > low.q) return `둘 다 속였어요! ${MODELS.top.name}가 질문 ${top.q - low.q}번을 더 버텼어요.`;
+  if (low.fooled && !top.fooled) return `같은 미션인데 ${MODELS.low.name}은 넘어가고, ${MODELS.top.name}은 넘어가지 않았어요.`;
+  if (low.fooled && top.fooled && top.q > low.q) return `둘 다 속였어요! ${MODELS.top.name}이 질문 ${top.q - low.q}번을 더 버텼어요.`;
   if (low.fooled && top.fooled) return '두 모델을 모두 금방 속였어요. 대단해요!';
-  if (!low.fooled && top.fooled) return `${MODELS.low.name}는 버티고 ${MODELS.top.name}만 넘어갔어요. 흔치 않은 결과예요!`;
+  if (!low.fooled && top.fooled) return `${MODELS.low.name}은 버티고 ${MODELS.top.name}만 넘어갔어요. 흔치 않은 결과예요!`;
   return '두 모델 모두 버텼어요. 다른 미션으로 다시 도전해 보세요!';
 }

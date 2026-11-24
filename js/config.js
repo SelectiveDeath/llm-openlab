@@ -3,7 +3,7 @@
 // OpenAI 중계 서버 (Cloudflare Worker). 키는 Worker에만 있다.
 export const WORKER_URL = 'https://llm-openlab.llm-timemachine.workers.dev';
 
-// 화면에 보여 줄 모델 정보 (실제 호출 모델은 Worker의 LOW_MODEL / TOP_MODEL 설정이 정한다)
+// 화면에 보여 줄 모델 정보 (name 뒤 조사는 받침 기준 "을·은·이"로 써 두었으니, 이름을 바꾸면 조사도 확인) (실제 호출 모델은 Worker의 LOW_MODEL / TOP_MODEL 설정이 정한다)
 export const MODELS = {
   low: { id: 'gpt-4o-mini', year: 2024, name: '하위 모델', icon: '📼' },
   top: { id: 'gpt-6-astra', year: 2026, name: '최상위 모델', icon: '🚀' },

@@ -150,7 +150,7 @@ export function playView({ game, tier, onNext }) {
 
   function quit() {
     if (busy || stage.done) return;
-    if (!confirm(`${model.name}를 포기할까요? 이 모델에서는 별을 받지 못해요.`)) return;
+    if (!confirm(`${model.name}을 포기할까요? 이 모델에서는 별을 받지 못해요.`)) return;
     stage.gaveUp = true;
     finish();
     renderMeter();

@@ -64,8 +64,8 @@ function statsSection() {
     h('div.stats',
       tile('참가자', `${s.players}명`),
       tile('끝낸 세트', `${s.sets}개`),
-      tile(`${MODELS.low.name}를 속인 비율`, pct(s.lowRate), s.lowAvgQ ? `평균 질문 ${num(s.lowAvgQ)}번` : ''),
-      tile(`${MODELS.top.name}를 속인 비율`, pct(s.topRate), s.topAvgQ ? `평균 질문 ${num(s.topAvgQ)}번` : '')));
+      tile(`${MODELS.low.name}을 속인 비율`, pct(s.lowRate), s.lowAvgQ ? `평균 질문 ${num(s.lowAvgQ)}번` : ''),
+      tile(`${MODELS.top.name}을 속인 비율`, pct(s.topRate), s.topAvgQ ? `평균 질문 ${num(s.topAvgQ)}번` : '')));
 }
 
 // ── 게임 설정 ──
