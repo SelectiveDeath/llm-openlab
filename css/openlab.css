@@ -61,6 +61,8 @@ button, input, textarea { font: inherit; color: inherit; }
 .screen { min-height: 100vh; padding: 2rem 2.4rem; }
 
 /* ── 대기 화면 ── */
+.notice { margin-bottom: 1rem; padding: .7rem 1rem; border-radius: .9rem; background: #fff6dc; border: 2px solid var(--edge); font-weight: 800; font-size: 1.1rem; }
+.notice.paused { background: var(--hard-soft); color: var(--red); }
 .lobby { display: grid; grid-template-columns: 1.15fr 1fr; gap: 2.4rem; align-items: center; }
 .lobby-hero h1 { font-size: 4.6rem; line-height: 1.05; letter-spacing: -.04em; margin: .7rem 0 .8rem; }
 .lobby-lead { font-size: 1.3rem; color: var(--ink-2); margin: 0 0 1.3rem; }

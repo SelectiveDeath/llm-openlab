@@ -12,13 +12,11 @@ export const MODELS = {
 // 심판이 낸 성공 확률이 이 값 이상이면 "속였다"
 export const JUDGE_THRESHOLD = 0.5;
 
-// 아무 입력이 없을 때: IDLE_MS 뒤 "계속할까요?" → IDLE_GRACE_MS 뒤 대기 화면으로
-export const IDLE_MS = 90_000;
+// 아무 입력이 없을 때: 관리자 설정 idleSec 뒤 "계속할까요?" → IDLE_GRACE_MS 뒤 대기 화면으로
 export const IDLE_GRACE_MS = 30_000;
 
-// 랭킹 새로고침 간격
+// 랭킹 새로고침 간격 (관리자 설정도 이때 같이 받아 온다)
 export const BOARD_REFRESH_MS = 5_000;
-export const BOARD_SIZE = 10;
 
 // 주소에 ?mock 이 있으면 가짜 답변 + 이 브라우저에만 저장되는 랭킹 (연습·테스트용, 비용 0)
 export const MOCK = new URLSearchParams(location.search).has('mock');

@@ -1,14 +1,43 @@
 /* 관리자 패널 */
-#admin { max-width: 960px; margin: 0 auto; padding: 2rem 1.4rem; }
+#admin { max-width: 1080px; margin: 0 auto; padding: 2rem 1.4rem 4rem; }
 .admin-login { max-width: 22rem; margin: 18vh auto 0; display: flex; flex-direction: column; gap: .8rem; text-align: center; }
 .admin-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .admin-head h1 { margin: 0; }
-.admin-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
-.btn.on { border-color: var(--win); }
-.btn.off { border-color: var(--red); }
-.btn.danger:hover { background: rgba(251, 113, 133, .2); }
-.admin-table { width: 100%; border-collapse: collapse; margin-top: .6rem; }
-.admin-table th, .admin-table td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
-.admin-table th { color: var(--ink-3); font-weight: 700; font-size: .85rem; }
-.hidden-row td { opacity: .4; text-decoration: line-through; }
-.hidden-row td:last-child { text-decoration: none; opacity: 1; }
+.admin-actions, .row-actions { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.admin-note { margin: .6rem 0 1.2rem; }
+.btn.toggle.on { background: var(--win-soft); border-color: var(--win); }
+.btn.toggle.off { background: var(--hard-soft); border-color: var(--red); }
+.btn.danger { color: var(--red); }
+.btn.danger:hover:not(:disabled) { background: var(--hard-soft); }
+
+.admin-section { background: var(--paper); border: 2px solid var(--edge); border-radius: 1.1rem; padding: 1.1rem 1.3rem; margin-bottom: 1.2rem; box-shadow: 0 4px 0 var(--edge); }
+.admin-section h2 { margin: 0 0 .7rem; font-size: 1.2rem; }
+.admin-section > p { margin: 0 0 .7rem; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; }
+.stat { background: #f8f6f1; border-radius: .8rem; padding: .7rem .9rem; display: flex; flex-direction: column; }
+.stat small { color: var(--ink-2); font-weight: 700; }
+.stat b { font-size: 1.7rem; }
+
+.fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem 1rem; margin-bottom: .8rem; }
+.field { display: flex; flex-direction: column; gap: .25rem; margin-bottom: .6rem; }
+.field-label { font-weight: 800; }
+.field small { font-size: .8rem; }
+.input.num { width: 9rem; }
+select.input { cursor: pointer; }
+
+.table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; }
+.admin-table th, .admin-table td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.admin-table th { color: var(--ink-3); font-weight: 800; font-size: .85rem; white-space: nowrap; }
+.admin-table .c { text-align: center; }
+.admin-table .small { font-size: .8rem; }
+.admin-table td.actions { white-space: nowrap; display: flex; gap: .3rem; }
+.admin-table input[type=checkbox] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
+.off-row td:not(:first-child) { opacity: .4; }
+.hidden-row td:not(.actions) { opacity: .4; text-decoration: line-through; }
+.empty-line { color: var(--ink-3); }
+
+@media (max-width: 800px) {
+  .stats, .fields { grid-template-columns: 1fr 1fr; }
+}

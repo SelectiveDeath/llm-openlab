@@ -11,13 +11,13 @@
 //  - { tier: 'low'|'top', messages }   → 채팅 (스트리밍)
 //  - { judge: { goal, messages, facts } } → 판정 { success: 0~1 }
 //  - { score: { player, nickname, setNo, missionId, low: {stars, q}, top: {stars, q} } } → 기록 등록 후 랭킹
-//  - { board: { player } }              → 랭킹
-//  - { admin: { password, action } }    → 관리자 (켜기/끄기, 기록 숨기기, 초기화)
+//  - { board: { player } }              → 랭킹 + 지금 설정 (대기 화면이 몇 초마다 받아 간다)
+//  - { admin: { password, action, ... } } → 관리자 (켜기/끄기, 설정, 기록 숨기기·지우기, 초기화)
 
 import { judgeRequest, parseJudge, checkJudgeInput } from '../js/judge.js';
-import { MAX_QUESTIONS, MAX_QUESTION_CHARS, SETS_PER_PLAYER, MAX_STARS, starsFor, checkNickname } from '../js/rules.js';
+import { MAX_QUESTIONS, MAX_QUESTION_CHARS, MAX_STARS, starsFor, checkNickname, normalizeSettings } from '../js/rules.js';
 import { missionById } from '../js/missions.js';
-import { ranking, boardView } from '../js/ranking.js';
+import { ranking, boardView, adminStats } from '../js/ranking.js';
 
 // 답을 짧게 받아서 화면에서 읽기 쉽고 비용도 줄인다 (두 모델에 똑같이 적용)
 const SYSTEM = '한국어로 답하세요. 답은 5문장 이내로 짧게 하세요.';
@@ -51,7 +51,7 @@ export default {
     if (body?.admin) { const r = await handleAdmin(body.admin, env); return json(r.body, r.status, cors); }
     if (body?.score) { const r = await handleScore(body.score, env); return json(r.body, r.status, cors); }
 
-    if (!(await isEnabled(env))) return json({ error: '지금은 체험 시간이 아니에요.' }, 503, cors);
+    if (!(await isEnabled(env))) return json({ error: '지금은 체험을 잠시 쉬고 있어요. 동아리원에게 물어봐 주세요.' }, 503, cors);
     if (!env.OPENAI_API_KEY) return json({ error: '서버에 OpenAI 키가 설정되지 않았어요.' }, 500, cors);
     if (body?.judge) return handleJudge(body.judge, env, cors);
     return handleChat(body, env, cors);
@@ -91,19 +91,41 @@ async function handleJudge(j, env, cors) {
   return json({ success }, 200, cors);
 }
 
+// ── 설정 ──────────────────────────────────
+
+async function getState(env, key) {
+  return (await env.DB.prepare('SELECT value FROM state WHERE key = ?1').bind(key).first())?.value ?? null;
+}
+
+async function setState(env, key, value) {
+  await env.DB.prepare('INSERT INTO state (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = ?2').bind(key, value).run();
+}
+
+async function isEnabled(env) {
+  return (await getState(env, 'enabled')) !== 'false';
+}
+
+async function getSettings(env) {
+  try { return normalizeSettings(JSON.parse(await getState(env, 'settings'))); } catch { return normalizeSettings(null); }
+}
+
 // ── 랭킹 ──────────────────────────────────
 
 async function loadSets(env, { hidden = false } = {}) {
   const { results } = await env.DB.prepare(
-    `SELECT player, nickname, mission_id, low_stars, low_q, top_stars, top_q, created_at FROM sets ${hidden ? '' : 'WHERE hidden = 0'} ORDER BY id`,
+    `SELECT player, nickname, set_no, mission_id, low_stars, low_q, top_stars, top_q, created_at, hidden FROM sets ${hidden ? '' : 'WHERE hidden = 0'} ORDER BY id`,
   ).all();
   return results.map((r) => ({
-    player: r.player, nickname: r.nickname, missionId: r.mission_id, lowStars: r.low_stars, lowQ: r.low_q, topStars: r.top_stars, topQ: r.top_q, at: r.created_at,
+    player: r.player, nickname: r.nickname, setNo: r.set_no, missionId: r.mission_id, lowStars: r.low_stars, lowQ: r.low_q, topStars: r.top_stars, topQ: r.top_q, at: r.created_at, hidden: !!r.hidden,
   }));
 }
 
 async function board(env, player) {
-  return boardView(await loadSets(env), { player: typeof player === 'string' ? player : null });
+  const [sets, settings, enabled] = await Promise.all([loadSets(env), getSettings(env), isEnabled(env)]);
+  return {
+    ...boardView(sets, { player: typeof player === 'string' ? player : null, size: settings.boardSize, bonus: settings.bonus }),
+    settings: { ...settings, enabled },
+  };
 }
 
 // 기록 검사: 별과 질문 수가 규칙에 맞는지 (속이지 못하면 별 0, 질문은 최대치)
@@ -118,7 +140,9 @@ async function handleScore(s, env) {
   if (typeof s?.player !== 'string' || !/^[0-9a-f-]{8,40}$/.test(s.player)) return bad('기록 형식이 올바르지 않아요.');
   const nickProblem = checkNickname(s.nickname);
   if (nickProblem) return bad(nickProblem);
-  if (!Number.isInteger(s.setNo) || s.setNo < 1 || s.setNo > SETS_PER_PLAYER) return bad('세트 번호가 올바르지 않아요.');
+  const { sets } = await getSettings(env);
+  // 체험 도중 관리자가 세트 수를 줄여도 이미 시작한 세트는 받는다 (최대치 5)
+  if (!Number.isInteger(s.setNo) || s.setNo < 1 || s.setNo > Math.max(sets, 5)) return bad('세트 번호가 올바르지 않아요.');
   if (!missionById(s.missionId)) return bad('미션이 올바르지 않아요.');
   if (!validPart(s.low) || !validPart(s.top)) return bad('점수가 규칙에 맞지 않아요.');
 
@@ -132,11 +156,6 @@ async function handleScore(s, env) {
 
 // ── 관리자 ──────────────────────────────────
 
-async function isEnabled(env) {
-  const row = await env.DB.prepare("SELECT value FROM state WHERE key = 'enabled'").first();
-  return row?.value !== 'false';
-}
-
 async function handleAdmin(a, env) {
   if (!env.ADMIN_PASSWORD) return { status: 500, body: { error: '관리자 비밀번호가 설정되지 않았어요.' } };
   if (!a || typeof a.password !== 'string' || !(await sameText(a.password, env.ADMIN_PASSWORD))) {
@@ -144,23 +163,34 @@ async function handleAdmin(a, env) {
     return { status: 401, body: { error: '비밀번호가 맞지 않아요.' } };
   }
   const db = env.DB;
+  const player = typeof a.player === 'string' ? a.player : null;
   if (a.action === 'enable') {
-    await db.prepare("INSERT INTO state (key, value) VALUES ('enabled', ?1) ON CONFLICT(key) DO UPDATE SET value = ?1").bind(a.on ? 'true' : 'false').run();
-  } else if (a.action === 'hide' && typeof a.player === 'string') {
-    await db.prepare('UPDATE sets SET hidden = ?2 WHERE player = ?1').bind(a.player, a.hidden === false ? 0 : 1).run();
+    await setState(env, 'enabled', a.on ? 'true' : 'false');
+  } else if (a.action === 'settings') {
+    // 보낸 값만 바꾸고 나머지는 그대로
+    const cur = await getSettings(env);
+    const next = normalizeSettings({ ...cur, ...a.settings, bonus: { ...cur.bonus, ...a.settings?.bonus } });
+    await setState(env, 'settings', JSON.stringify(next));
+  } else if (a.action === 'defaults') {
+    await setState(env, 'settings', JSON.stringify(normalizeSettings(null)));
+  } else if (a.action === 'hide' && player) {
+    await db.prepare('UPDATE sets SET hidden = ?2 WHERE player = ?1').bind(player, a.hidden === false ? 0 : 1).run();
+  } else if (a.action === 'delete' && player) {
+    await db.prepare('DELETE FROM sets WHERE player = ?1').bind(player).run();
   } else if (a.action === 'reset') {
     await db.prepare('DELETE FROM sets').run();
   }
 
-  const all = await loadSets(env, { hidden: true });
-  const { results: hiddenRows } = await db.prepare('SELECT DISTINCT player FROM sets WHERE hidden = 1').all();
-  const hidden = new Set(hiddenRows.map((r) => r.player));
+  const [all, settings, enabled] = await Promise.all([loadSets(env, { hidden: true }), getSettings(env), isEnabled(env)]);
+  const hidden = new Set(all.filter((s) => s.hidden).map((s) => s.player));
   return {
     status: 200,
     body: {
-      enabled: await isEnabled(env),
-      sets: all.length,
-      players: ranking(all).map((r) => ({ ...r, hidden: hidden.has(r.player) })),
+      enabled,
+      settings,
+      ...adminStats(all.filter((s) => !s.hidden)),
+      players: ranking(all, settings.bonus).map((r) => ({ ...r, hidden: hidden.has(r.player) })),
+      records: all,
     },
   };
 }

@@ -69,7 +69,7 @@ function errorMessage(status, text) {
     if (typeof msg === 'string' && /[가-힣]/.test(msg)) return msg;
   } catch { /* JSON이 아니면 아래 기본 문구 */ }
   if (status === 429) return '지금 요청이 너무 많아요. 10초 정도 기다렸다가 다시 보내 주세요.';
-  if (status === 401 || status === 403) return 'AI 연결 권한에 문제가 있어요. 동아리원에게 알려 주세요.';
+  if (status === 401 || status === 403) return 'AI 연결에 문제가 생겼어요. 동아리원에게 알려 주세요.';
   if (status === 400 && /policy/i.test(text)) return '이 질문은 보낼 수 없어요. 다른 질문으로 도전해 보세요.';
   if (status >= 500) return 'AI 서버에 잠깐 문제가 생겼어요. 다시 보내 주세요.';
   return `오류 (${status})`;

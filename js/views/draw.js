@@ -1,7 +1,6 @@
 // 미션 뽑기: 쉬움·보통·어려움 카드가 한 장씩, 슬롯머신처럼 각자 돌다가 차례로 멈춘다.
-// 카드마다 한 번씩 다시 돌릴 수 있다. 하나를 고르면 그 미션으로 세트가 시작된다.
-import { REROLLS_PER_CARD, SETS_PER_PLAYER } from '../rules.js';
-import { TIERS, MISSIONS, rollTier } from '../missions.js';
+// 카드마다 정해진 횟수(관리자 설정 rerolls)만큼 다시 돌릴 수 있다. 하나를 고르면 그 미션으로 세트가 시작된다.
+import { TIERS, MISSIONS, rollTier, rewardText } from '../missions.js';
 import { h, clear } from '../ui.js';
 
 const SPIN_MS = [1100, 1600, 2100]; // 카드가 멈추는 시각 (왼쪽부터 차례로)
@@ -13,6 +12,7 @@ const RESPIN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 
 export function drawView({ game, onPick }) {
   const { player, set } = game;
+  const { cfg } = player;
   const timers = [];
   const later = (fn, ms) => timers.push(setTimeout(fn, ms));
   let picked = false;
@@ -22,16 +22,16 @@ export function drawView({ game, onPick }) {
 
   function makeSlot(tier) {
     const t = TIERS[tier];
-    const slot = { tier, mission: null, rerolls: REROLLS_PER_CARD, spinning: false };
+    const slot = { tier, mission: null, rerolls: cfg.rerolls, spinning: false };
     const icon = h('div.card-icon');
     const title = h('div.card-title');
     const goal = h('p.card-goal');
     const burst = h('div.burst');
     const card = h('button.mcard.tier-' + t.key, { disabled: true, onclick: () => pick(slot) },
-      h('div.mcard-head', h('span.mcard-tier', t.name), h('span.mcard-reward', t.reward)),
+      h('div.mcard-head', h('span.mcard-tier', t.name), h('span.mcard-reward', rewardText(cfg.bonus[tier]))),
       h('div.mcard-window', h('div.mcard-reel', icon, title)),
       goal,
-      h('div.mcard-risk', h('span', '⚠️ ', t.risk)),
+      h('div.mcard-risk', t.risk),
       h('span.shine'),
       burst);
     const again = h('button.respin', { html: RESPIN_ICON, title: '다시 돌리기', 'aria-label': `${t.name} 카드 다시 돌리기`, onclick: () => spin(slot, RESPIN_MS, true) });
@@ -48,8 +48,8 @@ export function drawView({ game, onPick }) {
       slot.rerolls -= 1;
     }
     const others = slots.filter((s) => s !== slot).map((s) => s.mission?.id);
-    const result = rollTier(slot.tier, [...player.seen, ...others, slot.mission?.id]);
-    const pool = MISSIONS.filter((m) => m.tier === slot.tier);
+    const result = rollTier(slot.tier, [...player.seen, ...others, slot.mission?.id], cfg.off);
+    const pool = MISSIONS.filter((m) => m.tier === slot.tier && !cfg.off.includes(m.id));
     slot.spinning = true;
     slot.mission = null;
     slot.card.disabled = true;
@@ -79,7 +79,7 @@ export function drawView({ game, onPick }) {
     slot.spinning = false;
     slot.mission = m;
     show(slot, m);
-    slot.goal.textContent = m.goal;
+    slot.goal.textContent = m.brief;
     slot.card.classList.remove('spinning');
     void slot.card.offsetWidth; // 애니메이션 다시 시작
     slot.card.classList.add('landed');
@@ -110,6 +110,8 @@ export function drawView({ game, onPick }) {
   }
 
   function updateAgain(slot) {
+    slot.again.hidden = cfg.rerolls <= 0;
+    slot.again.title = slot.rerolls > 0 ? `다시 돌리기 (${slot.rerolls}번 남음)` : '다시 돌리기를 다 썼어요';
     slot.again.disabled = picked || slot.spinning || slot.rerolls <= 0;
     slot.again.classList.toggle('used', slot.rerolls <= 0);
     slot.again.classList.toggle('turning', slot.spinning);
@@ -132,9 +134,9 @@ export function drawView({ game, onPick }) {
 
   const el = h('div.screen.draw',
     h('div.draw-head',
-      h('div.kicker', `${player.nickname} · 세트 ${set.no}/${SETS_PER_PLAYER}`),
-      h('h1', '미션 카드를 골라 주세요'),
-      h('p.muted', '어려운 카드일수록 잘 안 속지만, 속이면 모델마다 보너스 별을 더 받아요.')),
+      h('div.kicker', `${player.nickname} · ${set.no}세트 / ${cfg.sets}세트`),
+      h('h1', '도전할 미션을 고르세요'),
+      h('p.muted', '어려운 카드일수록 AI가 잘 안 넘어가지만, 성공하면 보너스 별을 더 받아요.')),
     row);
   return { el, cleanup: () => timers.forEach(clearTimeout) };
 }
