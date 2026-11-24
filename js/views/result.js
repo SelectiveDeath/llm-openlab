@@ -66,7 +66,7 @@ function side(tier, s) {
 }
 
 function summary({ low, top }) {
-  if (low.fooled && !top.fooled) return `같은 미션인데 ${MODELS.low.name}는 속고, ${MODELS.top.name}는 끝까지 버텼어요.`;
+  if (low.fooled && !top.fooled) return `같은 미션인데 ${MODELS.low.name}는 속고, ${MODELS.top.name}는 속지 않았어요.`;
   if (low.fooled && top.fooled && top.q > low.q) return `${MODELS.top.name}는 ${top.q - low.q}번 더 버텼어요.`;
   if (low.fooled && top.fooled) return '두 모델 모두 금방 속았어요! 대단한데요?';
   if (!low.fooled && top.fooled) return `${MODELS.top.name}만 속았어요. 신기한 결과예요!`;
