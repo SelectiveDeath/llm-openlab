@@ -7,12 +7,12 @@ import { h, clear, starRow } from '../ui.js';
 import { boardPanel } from '../board.js';
 
 export function lobbyView({ onStart }) {
-  const input = h('input.input.nick-input', { maxLength: NICKNAME_MAX * 2, placeholder: `닉네임 (${NICKNAME_MAX}자까지)`, autocomplete: 'off', spellcheck: false });
+  const input = h('input.input.nick-input', { id: 'nick', maxLength: NICKNAME_MAX * 2, placeholder: `닉네임 (${NICKNAME_MAX}자까지)`, autocomplete: 'off', spellcheck: false });
   const err = h('p.nick-error');
   const startBtn = h('button.btn.btn-primary.btn-xl', { onclick: start }, '시작하기 →');
   const notice = h('div.notice');
   const tierRules = h('div.tier-rules');
-  const limits = h('span.star-rule.muted');
+  const limits = h('p.start-limits');
 
   function start() {
     if (!settings.enabled) { err.textContent = '지금은 체험을 잠시 쉬고 있어요.'; return; }
@@ -44,16 +44,22 @@ export function lobbyView({ onStart }) {
       h('div.kicker', 'AI 동아리 오픈랩'),
       h('h1', 'AI를 속여라!'),
       h('p.lobby-lead', '같은 미션으로 ', h('b.c-low', '하위 모델'), '과 ', h('b.c-top', '최상위 모델'), '을 차례로 속여 보세요.', h('br'), h('b', '질문을 적게 쓸수록'), ' 별을 많이 받아요.'),
-      h('div.how',
-        how('🎰', '미션 카드 고르기', '쉬움·보통·어려움 중 한 장'),
-        how(MODELS.low.icon, `${MODELS.low.name} 속이기`, `${MODELS.low.id} · ${MODELS.low.year}년`),
-        how(MODELS.top.icon, `${MODELS.top.name} 속이기`, `${MODELS.top.id} · ${MODELS.top.year}년`)),
-      tierRules,
-      h('div.star-rules',
-        STAR_RULES.map((r) => h('span.star-rule', starRow(r.stars), ` ${r.max}번 안에 속이면`)),
+      // 가장 먼저 눈에 들어와야 하는 시작 상자
+      h('div.start-card',
+        h('label.start-label', { for: 'nick' }, '🎮 닉네임을 쓰고 바로 시작!'),
+        h('div.nick-box', input, startBtn),
+        err,
         limits),
-      h('div.nick-box', input, startBtn),
-      err),
+      // 규칙은 시작 상자 아래에 한눈에
+      h('div.rules',
+        h('div.how',
+          how('🎰', '미션 카드 고르기', '쉬움·보통·어려움 중 한 장'),
+          h('span.how-arrow', '→'),
+          how(MODELS.low.icon, `${MODELS.low.name} 속이기`, `${MODELS.low.id} · ${MODELS.low.year}년`),
+          h('span.how-arrow', '→'),
+          how(MODELS.top.icon, `${MODELS.top.name} 속이기`, `${MODELS.top.id} · ${MODELS.top.year}년`)),
+        h('div.rule-row', h('span.rule-head', '별'), h('div.star-rules', STAR_RULES.map((r) => h('span.star-rule', starRow(r.stars), ` ${r.max}번 안에`)))),
+        h('div.rule-row', h('span.rule-head', '카드'), tierRules))),
     board.el);
 
   return { el, focus: () => input.focus(), cleanup: board.cleanup };
