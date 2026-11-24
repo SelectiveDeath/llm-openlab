@@ -6,7 +6,10 @@ import { h, clear } from '../ui.js';
 
 const SPIN_MS = [1100, 1600, 2100]; // 카드가 멈추는 시각 (왼쪽부터 차례로)
 const RESPIN_MS = 1100;
-const BURST = 18; // 멈출 때 튀는 조각 수
+const BURST = 36; // 멈출 때 터지는 조각 수 (고를 때는 1.5배)
+
+// 다시 돌리기 아이콘 (시계 방향 화살표)
+const RESPIN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>';
 
 export function drawView({ game, onPick }) {
   const { player, set } = game;
@@ -31,7 +34,7 @@ export function drawView({ game, onPick }) {
       h('div.mcard-risk', h('span', '⚠️ ', t.risk)),
       h('span.shine'),
       burst);
-    const again = h('button.btn.btn-sm.respin', { onclick: () => spin(slot, RESPIN_MS, true) });
+    const again = h('button.respin', { html: RESPIN_ICON, title: '다시 돌리기', 'aria-label': `${t.name} 카드 다시 돌리기`, onclick: () => spin(slot, RESPIN_MS, true) });
     slot.el = h('div.slot', card, again);
     Object.assign(slot, { card, icon, title, goal, burst, again });
     return slot;
@@ -85,18 +88,31 @@ export function drawView({ game, onPick }) {
     updateAgain(slot);
   }
 
-  function burst(slot) {
+  // 폭발: 섬광 + 퍼지는 고리 2개 + 사방으로 튀는 조각(네모·동그라미·별)
+  function burst(slot, scale = 1) {
     clear(slot.burst);
-    for (let k = 0; k < BURST; k++) {
-      const a = (Math.PI * 2 * k) / BURST + Math.random() * .3;
-      const d = 110 + Math.random() * 90;
-      slot.burst.append(h('i', { style: { '--x': `${Math.cos(a) * d}px`, '--y': `${Math.sin(a) * d}px`, '--r': `${Math.random() * 360}deg`, animationDelay: `${Math.random() * 60}ms` } }));
+    slot.burst.append(h('b.boom-flash'), h('b.boom-ring'), h('b.boom-ring.late'));
+    const n = Math.round(BURST * scale);
+    for (let k = 0; k < n; k++) {
+      const a = (Math.PI * 2 * k) / n + Math.random() * .4;
+      const d = (150 + Math.random() * 200) * scale;
+      const star = k % 5 === 0;
+      slot.burst.append(h('i' + (star ? '.star-bit' : ''), {
+        style: {
+          '--x': `${Math.cos(a) * d}px`, '--y': `${Math.sin(a) * d}px`, '--r': `${Math.random() * 720 - 360}deg`,
+          '--s': (.6 + Math.random() * .9).toFixed(2), animationDelay: `${Math.random() * 80}ms`,
+        },
+      }, star ? '★' : null));
     }
+    slot.card.classList.remove('boom');
+    void slot.card.offsetWidth; // 애니메이션 다시 시작
+    slot.card.classList.add('boom');
   }
 
   function updateAgain(slot) {
-    slot.again.textContent = slot.rerolls > 0 ? `🔄 다시 돌리기 (${slot.rerolls})` : '다시 돌리기 끝';
     slot.again.disabled = picked || slot.spinning || slot.rerolls <= 0;
+    slot.again.classList.toggle('used', slot.rerolls <= 0);
+    slot.again.classList.toggle('turning', slot.spinning);
   }
 
   function pick(slot) {
@@ -108,8 +124,8 @@ export function drawView({ game, onPick }) {
       s.card.classList.toggle('dropped', s !== slot);
       updateAgain(s);
     }
-    burst(slot);
-    later(() => onPick(slot.mission), 900);
+    burst(slot, 1.5);
+    later(() => onPick(slot.mission), 1000);
   }
 
   slots.forEach((s, k) => spin(s, SPIN_MS[k]));

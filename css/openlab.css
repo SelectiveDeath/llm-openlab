@@ -143,21 +143,32 @@ button, input, textarea { font: inherit; color: inherit; }
 @keyframes reel { 0% { transform: translateY(-18%); } 100% { transform: translateY(18%); } }
 
 /* 멈출 때: 쿵 튀고, 빛이 한 번 쓸고, 조각이 튄다 */
-.mcard.landed { animation: land .55s cubic-bezier(.3, 1.6, .5, 1); }
+.mcard.landed { animation: land .6s cubic-bezier(.3, 1.6, .5, 1); }
 .mcard.landed .mcard-window { animation: flash .6s; }
-@keyframes land { 0% { transform: scale(.92) translateY(10px); } 60% { transform: scale(1.06) translateY(-6px); } 100% { transform: none; } }
+@keyframes land { 0% { transform: scale(.9) translateY(14px); } 45% { transform: scale(1.1) translateY(-12px) rotate(-1.5deg); } 70% { transform: scale(.98) rotate(.8deg); } 100% { transform: none; } }
 @keyframes flash { 0% { background: #fff; } 100% { background: var(--s); } }
 .shine { position: absolute; inset: 0; border-radius: 1.1rem; overflow: hidden; pointer-events: none; }
 .shine::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 35%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .85), transparent); transform: skewX(-15deg); }
 .mcard.landed .shine::after { animation: sweep .9s .1s ease-out; }
 @keyframes sweep { to { left: 130%; } }
-.burst { position: absolute; left: 50%; top: 40%; width: 0; height: 0; pointer-events: none; z-index: 5; }
-.burst i { position: absolute; width: .7rem; height: .7rem; margin: -.35rem; background: var(--c); border: 2px solid var(--edge); border-radius: 2px; opacity: 0; animation: fly .8s cubic-bezier(.2, .8, .3, 1) forwards; }
+.burst { position: absolute; left: 50%; top: 38%; width: 0; height: 0; pointer-events: none; z-index: 5; }
+.mcard.boom { z-index: 4; }
+/* 섬광: 카드 가운데서 하얗게 번쩍 */
+.boom-flash { position: absolute; left: -9rem; top: -9rem; width: 18rem; height: 18rem; border-radius: 50%; background: radial-gradient(circle, #fff 0 30%, color-mix(in srgb, var(--c) 45%, #fff) 45%, transparent 70%); animation: flash-out .45s ease-out forwards; }
+@keyframes flash-out { 0% { opacity: 1; transform: scale(.2); } 100% { opacity: 0; transform: scale(1.4); } }
+/* 고리: 카드 색 테두리가 크게 퍼지며 사라짐 */
+.boom-ring { position: absolute; left: -2rem; top: -2rem; width: 4rem; height: 4rem; border-radius: 50%; border: 6px solid var(--c); animation: ring .6s cubic-bezier(.1, .7, .3, 1) forwards; }
+.boom-ring.late { border-color: var(--edge); border-width: 3px; animation-delay: .1s; opacity: 0; }
+@keyframes ring { 0% { opacity: 1; transform: scale(.3); } 100% { opacity: 0; transform: scale(6); } }
+/* 조각: 사방으로 튀었다가 중력처럼 아래로 떨어짐 */
+.burst i { position: absolute; width: .8rem; height: .8rem; margin: -.4rem; background: var(--c); border: 2px solid var(--edge); border-radius: 2px; opacity: 0; animation: fly 1s cubic-bezier(.15, .75, .3, 1) forwards; }
 .burst i:nth-child(3n) { background: var(--star); border-radius: 50%; }
 .burst i:nth-child(4n) { background: #fff; }
+.burst i.star-bit { width: auto; height: auto; margin: -.8rem; background: none; border: 0; color: var(--star); font-size: 1.6rem; font-style: normal; line-height: 1; -webkit-text-stroke: 1.5px var(--edge); }
 @keyframes fly {
-  0% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
-  100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 40px)) rotate(var(--r)) scale(.5); }
+  0% { opacity: 1; transform: translate(0, 0) rotate(0) scale(calc(var(--s) * 1.4)); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 90px)) rotate(var(--r)) scale(calc(var(--s) * .4)); }
 }
 /* 어려움 카드는 멈출 때 흔들리고, 테두리가 깜빡인다 */
 .mcard.tier-hard.landed { animation: land .55s cubic-bezier(.3, 1.6, .5, 1), shake .4s .5s; }
@@ -168,7 +179,16 @@ button, input, textarea { font: inherit; color: inherit; }
 .mcard.chosen { transform: translateY(-14px) scale(1.07) rotate(-1.5deg); box-shadow: 0 18px 0 var(--edge); z-index: 2; }
 .mcard.chosen::before { content: '이 미션으로!'; position: absolute; top: -1.1rem; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-weight: 900; padding: .15rem .8rem; border-radius: 999px; white-space: nowrap; z-index: 3; }
 .mcard.dropped { opacity: .25; transform: scale(.94); }
-.respin { min-width: 9rem; }
+/* 다시 돌리기: 동그란 아이콘 버튼 */
+.respin { width: 3rem; height: 3rem; padding: .65rem; border-radius: 50%; border: 2px solid var(--edge); background: var(--paper); color: var(--ink); cursor: pointer; box-shadow: 0 3px 0 var(--edge); transition: transform .08s, box-shadow .08s, background .15s; }
+.respin svg { width: 100%; height: 100%; display: block; transition: transform .35s; }
+.respin:hover:not(:disabled) { background: #faf7f0; }
+.respin:hover:not(:disabled) svg { transform: rotate(90deg); }
+.respin:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 var(--edge); }
+.respin.turning svg { animation: turn .6s linear infinite; }
+.respin:disabled { cursor: default; }
+.respin.used { opacity: .3; box-shadow: none; }
+@keyframes turn { to { transform: rotate(360deg); } }
 
 /* ── 속이기 화면 ── */
 .play { --t: var(--low); --ts: var(--low-soft); display: grid; grid-template-rows: auto auto auto 1fr; gap: .7rem; height: 100vh; padding: 1rem 2rem; }
