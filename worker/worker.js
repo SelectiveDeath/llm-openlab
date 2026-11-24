@@ -95,10 +95,10 @@ async function handleJudge(j, env, cors) {
 
 async function loadSets(env, { hidden = false } = {}) {
   const { results } = await env.DB.prepare(
-    `SELECT player, nickname, low_stars, low_q, top_stars, top_q, created_at FROM sets ${hidden ? '' : 'WHERE hidden = 0'} ORDER BY id`,
+    `SELECT player, nickname, mission_id, low_stars, low_q, top_stars, top_q, created_at FROM sets ${hidden ? '' : 'WHERE hidden = 0'} ORDER BY id`,
   ).all();
   return results.map((r) => ({
-    player: r.player, nickname: r.nickname, lowStars: r.low_stars, lowQ: r.low_q, topStars: r.top_stars, topQ: r.top_q, at: r.created_at,
+    player: r.player, nickname: r.nickname, missionId: r.mission_id, lowStars: r.low_stars, lowQ: r.low_q, topStars: r.top_stars, topQ: r.top_q, at: r.created_at,
   }));
 }
 

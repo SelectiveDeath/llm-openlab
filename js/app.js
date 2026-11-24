@@ -1,7 +1,7 @@
 // 오픈랩 체험 진행: 대기 화면 → (미션 뽑기 → 하위 모델 → 최상위 모델 → 세트 결과) × 세트 수 → 대기 화면
 // 노트북 한 대를 여러 사람이 돌아가며 쓰므로, 기록은 메모리에만 두고 사람이 바뀌면 모두 지운다.
 import { IDLE_MS, IDLE_GRACE_MS, MOCK } from './config.js';
-import { SETS_PER_PLAYER, REROLLS_PER_SET } from './rules.js';
+import { SETS_PER_PLAYER } from './rules.js';
 import { h, clear } from './ui.js';
 import { touch, idleFor } from './activity.js';
 import { lobbyView } from './views/lobby.js';
@@ -14,7 +14,7 @@ const root = document.getElementById('app');
 // 지금 체험 중인 사람과 세트
 const game = {
   player: null, // { id, nickname, setsDone, seen: [미션 id] }
-  set: null, // { no, mission, rerolls, low: stage, top: stage }
+  set: null, // { no, mission, low: stage, top: stage }
 };
 
 const newStage = () => ({ messages: [], q: 0, stars: 0, done: false, fooled: false, fooledAt: -1 });
@@ -41,7 +41,7 @@ function startPlayer(nickname) {
 }
 
 function goDraw() {
-  game.set = { no: game.player.setsDone + 1, mission: null, rerolls: REROLLS_PER_SET, low: newStage(), top: newStage() };
+  game.set = { no: game.player.setsDone + 1, mission: null, low: newStage(), top: newStage() };
   show(drawView({
     game,
     onPick: (mission) => {

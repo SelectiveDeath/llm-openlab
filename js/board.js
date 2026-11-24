@@ -1,6 +1,7 @@
 // 🏆 랭킹 패널: 대기 화면과 세트 결과 화면에서 쓴다. 몇 초마다 새로 받아 와서 다른 노트북 기록도 보인다.
 import { BOARD_REFRESH_MS } from './config.js';
-import { MAX_STARS } from './rules.js';
+import { MAX_SET_POINTS } from './ranking.js';
+import { TIERS } from './missions.js';
 import { fetchBoard } from './api.js';
 import { h, clear } from './ui.js';
 
@@ -22,16 +23,16 @@ export function boardPanel({ player = null, initial = null, title = '🏆 실시
     }
     for (const r of data.rows) list.append(row(r));
     if (data.me && !data.rows.some((r) => r.mine)) {
-      list.append(h('li.board-gap', '⋯'), row({ ...data.me, nickname: '나', mine: true, lowStars: null }));
+      list.append(h('li.board-gap', '⋯'), row({ ...data.me, nickname: '나', mine: true }));
     }
   }
 
   function row(r) {
     return h('li.board-row' + (r.mine ? '.mine' : '') + (r.rank <= 3 ? '.podium' : ''),
       h('span.board-rank', MEDALS[r.rank - 1] ?? String(r.rank)),
-      h('span.board-name', r.nickname),
+      h('span.board-name', r.nickname, r.tier && h('span.tier-dot.tier-' + TIERS[r.tier].key, { title: TIERS[r.tier].name })),
       h('span.board-score',
-        h('span.board-stars', '★ ', h('b', String(r.stars)), h('small', ` / ${MAX_STARS * 2}`)),
+        h('span.board-stars', '★ ', h('b', String(r.points)), h('small', ` / ${MAX_SET_POINTS}`)),
         h('span.board-q', `질문 ${r.q}개`)));
   }
 

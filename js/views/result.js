@@ -3,6 +3,8 @@ import { MODELS } from '../config.js';
 import { MAX_QUESTIONS, MAX_STARS, SETS_PER_PLAYER } from '../rules.js';
 import { submitSet } from '../api.js';
 import { boardPanel } from '../board.js';
+import { TIERS } from '../missions.js';
+import { MAX_SET_POINTS, partPoints } from '../ranking.js';
 import { h, clear, starRow, short } from '../ui.js';
 
 // 랭킹에 올릴 세트 기록: 속이지 못한 모델은 질문을 다 쓴 것으로 친다
@@ -14,7 +16,8 @@ function setRecord({ player, set }) {
 export function resultView({ game, setsLeft, onAgain, onQuit }) {
   const { player, set } = game;
   const record = setRecord(game);
-  const total = record.low.stars + record.top.stars;
+  const total = partPoints(record.low.stars, record.missionId) + partPoints(record.top.stars, record.missionId);
+  const tier = TIERS[set.mission.tier];
 
   const boardSlot = h('div.result-board', h('div.board.loading', '기록을 올리는 중…'));
   const rankLine = h('p.rank-line');
@@ -31,7 +34,7 @@ export function resultView({ game, setsLeft, onAgain, onQuit }) {
     clear(boardSlot).append(board.el);
     if (data?.me) {
       clear(rankLine).append('지금 ', h('b', `${data.me.rank}위`), ` / ${data.players}명`);
-      if (data.me.stars > total) rankLine.append(h('span.muted', ` (최고 기록: ★ ${data.me.stars})`));
+      if (data.me.points > total) rankLine.append(h('span.muted', ` (최고 기록: ★ ${data.me.points})`));
     }
   })();
 
@@ -39,10 +42,10 @@ export function resultView({ game, setsLeft, onAgain, onQuit }) {
   const el = h('div.screen.result',
     h('section.result-main',
       h('div.kicker', `${player.nickname} · 세트 ${set.no}/${SETS_PER_PLAYER} 결과`),
-      h('h1', set.mission.icon, ' ', set.mission.title),
-      h('div.result-total', '이번 세트 ', h('b', `★ ${total}`), h('small', ` / ${MAX_STARS * 2}`)),
+      h('h1', set.mission.icon, ' ', set.mission.title, h('span.mission-tier.tier-' + tier.key, tier.name)),
+      h('div.result-total', '이번 세트 ', h('b', `★ ${total}`), h('small', ` / ${MAX_SET_POINTS}`)),
       rankLine,
-      h('div.vs-cards', side('low', set.low), side('top', set.top)),
+      h('div.vs-cards', side('low', set.low, tier.bonus), side('top', set.top, tier.bonus)),
       diff && h('p.result-summary', diff),
       h('div.result-actions',
         setsLeft > 0
@@ -54,13 +57,13 @@ export function resultView({ game, setsLeft, onAgain, onQuit }) {
   return { el, cleanup: () => board?.cleanup() };
 }
 
-function side(tier, s) {
+function side(tier, s, bonus) {
   const m = MODELS[tier];
   const ai = s.messages.filter((x) => x.role === 'assistant');
   const quote = s.fooled ? s.messages[s.fooledAt]?.content : ai.at(-1)?.content;
   return h('div.vs-card.tier-' + tier + (s.fooled ? '.win' : '.lose'),
     h('div.vs-model', `${m.icon} ${m.name}`, h('small', ` ${m.id} · ${m.year}`)),
-    starRow(s.stars, MAX_STARS, 'big'),
+    h('div.vs-stars', starRow(s.stars, MAX_STARS, 'big'), s.fooled && bonus > 0 && h('span.bonus', `+${bonus}`)),
     h('div.vs-state', s.fooled ? `질문 ${s.q}개 만에 속았어요` : s.q ? `질문 ${s.q}개를 버텼어요` : '도전하지 않았어요'),
     quote && h('blockquote.vs-quote', h('small', s.fooled ? '속은 답' : '마지막 답'), short(quote, 120)));
 }

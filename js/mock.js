@@ -38,7 +38,7 @@ const loadSets = () => {
 
 export async function submitSet(r) {
   const sets = loadSets();
-  sets.push({ player: r.player, nickname: r.nickname, lowStars: r.low.stars, lowQ: r.low.q, topStars: r.top.stars, topQ: r.top.q, at: Date.now() });
+  sets.push({ player: r.player, nickname: r.nickname, missionId: r.missionId, lowStars: r.low.stars, lowQ: r.low.q, topStars: r.top.stars, topQ: r.top.q, at: Date.now() });
   try { localStorage.setItem(BOARD_KEY, JSON.stringify(sets)); } catch { /* 저장 못 해도 화면은 진행 */ }
   return board(r.player);
 }

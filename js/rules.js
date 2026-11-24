@@ -17,9 +17,8 @@ export const STAR_RULES = [
 // 질문 한 개의 최대 글자 수
 export const MAX_QUESTION_CHARS = 300;
 
-// 미션 카드: 한 번에 보여 주는 장수, 세트마다 다시 뽑기 횟수
-export const CARDS_PER_DRAW = 3;
-export const REROLLS_PER_SET = 1;
+// 미션 카드(쉬움·보통·어려움 한 장씩)를 세트마다 각각 다시 돌릴 수 있는 횟수
+export const REROLLS_PER_CARD = 1;
 
 export const NICKNAME_MAX = 12;
 

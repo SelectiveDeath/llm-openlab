@@ -12,6 +12,8 @@ export function playView({ game, tier, onNext }) {
   const stage = set[tier];
   const model = MODELS[tier];
   const mission = set.mission;
+  const bonus = TIERS[mission.tier].bonus;
+  const plus = () => bonus > 0 && h('span.bonus', `+${bonus}`);
   let busy = false;
   let aborter = null;
 
@@ -46,13 +48,13 @@ export function playView({ game, tier, onNext }) {
     }
     clear(nowStars);
     if (stage.done) {
-      nowStars.append(stage.fooled ? h('span', '획득 ', starRow(stage.stars, MAX_STARS, 'big')) : h('span.muted', '별 없음'));
+      nowStars.append(stage.fooled ? h('span.now-got', '획득 ', starRow(stage.stars, MAX_STARS, 'big'), plus()) : h('span.muted', '별 없음'));
       return;
     }
     const next = starsFor(stage.q + 1);
     const rule = STAR_RULES.find((r) => r.stars === next);
     nowStars.append(
-      h('span.now-label', '지금 속이면'), starRow(next, MAX_STARS, 'big'),
+      h('span.now-label', '지금 속이면'), starRow(next, MAX_STARS, 'big'), plus(),
       rule && h('small.muted', `질문 ${rule.max}개까지`));
   }
 
@@ -161,7 +163,7 @@ export function playView({ game, tier, onNext }) {
         ? h('div.end-card.win',
           h('div.end-emoji', '🎉'),
           h('h2', `${model.id}를 속였어요!`),
-          h('p', `질문 ${stage.q}개 만에 성공 `, starRow(stage.stars, MAX_STARS, 'big')))
+          h('p', `질문 ${stage.q}개 만에 성공 `, starRow(stage.stars, MAX_STARS, 'big'), bonus > 0 && h('span.bonus', `${TIERS[mission.tier].name} 보너스 +${bonus}`)))
         : h('div.end-card.lose',
           h('div.end-emoji', '🛡️'),
           h('h2', `${model.id}가 버텼어요`),
@@ -196,7 +198,8 @@ export function playView({ game, tier, onNext }) {
       h('div.play-who', `${player.nickname} · 세트 ${set.no}/${SETS_PER_PLAYER}`)),
     h('div.mission-strip.tier-' + TIERS[mission.tier].key,
       h('span.mission-icon', mission.icon),
-      h('div.mission-text', h('b', mission.title), h('span', mission.goal))),
+      h('div.mission-text', h('b', mission.title), h('span', mission.goal)),
+      h('span.mission-tier', TIERS[mission.tier].name, bonus > 0 && ` · 속이면 +${bonus}`)),
     meter,
     h('main.chat', log, endBox, composer));
 
