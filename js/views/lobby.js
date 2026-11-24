@@ -38,31 +38,32 @@ export function lobbyView({ onStart }) {
 
   const board = boardPanel({ onData: update });
 
+  // 가운데: 제목과 시작 상자 / 왼쪽: 하는 방법과 규칙 / 오른쪽: 실시간 랭킹
   const el = h('div.screen.lobby',
-    h('section.lobby-hero',
+    h('aside.lobby-side.rules',
+      h('h2', '🧭 이렇게 해요'),
+      h('ol.how',
+        how('🎰', '미션 카드 고르기', '쉬움·보통·어려움 중 한 장'),
+        how(MODELS.low.icon, `${MODELS.low.name} 속이기`, `${MODELS.low.id} · ${MODELS.low.year}년`),
+        how(MODELS.top.icon, `${MODELS.top.name} 속이기`, `${MODELS.top.id} · ${MODELS.top.year}년`)),
+      h('h3', '⭐ 별 받는 법'),
+      h('div.star-rules', STAR_RULES.map((r) => h('span.star-rule', starRow(r.stars), ` ${r.max}번 안에 속이면`))),
+      h('h3', '🃏 카드 난이도'),
+      tierRules),
+    h('section.lobby-center',
       notice,
       h('div.kicker', 'AI 동아리 오픈랩'),
       h('h1', 'AI를 속여라!'),
-      h('p.lobby-lead', '같은 미션으로 ', h('b.c-low', '하위 모델'), '과 ', h('b.c-top', '최상위 모델'), '을 차례로 속여 보세요.', h('br'), h('b', '질문을 적게 쓸수록'), ' 별을 많이 받아요.'),
-      // 가장 먼저 눈에 들어와야 하는 시작 상자
+      h('p.lobby-lead', '같은 미션으로 ', h('b.c-low', '하위 모델'), '과 ', h('b.c-top', '최상위 모델'), '을', h('br'), '차례로 속여 보세요. ', h('b', '질문을 적게 쓸수록'), ' 별이 많아요.'),
       h('div.start-card',
         h('label.start-label', { for: 'nick' }, '🎮 닉네임을 쓰고 바로 시작!'),
-        h('div.nick-box', input, startBtn),
+        input,
+        startBtn,
         err,
-        limits),
-      // 규칙은 시작 상자 아래에 한눈에
-      h('div.rules',
-        h('div.how',
-          how('🎰', '미션 카드 고르기', '쉬움·보통·어려움 중 한 장'),
-          h('span.how-arrow', '→'),
-          how(MODELS.low.icon, `${MODELS.low.name} 속이기`, `${MODELS.low.id} · ${MODELS.low.year}년`),
-          h('span.how-arrow', '→'),
-          how(MODELS.top.icon, `${MODELS.top.name} 속이기`, `${MODELS.top.id} · ${MODELS.top.year}년`)),
-        h('div.rule-row', h('span.rule-head', '별'), h('div.star-rules', STAR_RULES.map((r) => h('span.star-rule', starRow(r.stars), ` ${r.max}번 안에`)))),
-        h('div.rule-row', h('span.rule-head', '카드'), tierRules))),
-    board.el);
+        limits)),
+    h('div.lobby-side', board.el));
 
   return { el, focus: () => input.focus(), cleanup: board.cleanup };
 }
 
-const how = (icon, title, sub) => h('div.how-step', h('span.how-icon', icon), h('b', title), h('small', sub));
+const how = (icon, title, sub) => h('li.how-step', h('span.how-icon', icon), h('span.how-text', h('b', title), h('small', sub)));
