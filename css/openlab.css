@@ -27,6 +27,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* display를 지정한 요소도 hidden이면 숨긴다 */
 html, body { margin: 0; height: 100%; }
 html { font-size: clamp(14px, 1.15vw, 20px); }
 body { font-family: var(--font); color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased; background: var(--bg); }
@@ -193,7 +194,12 @@ button, input, textarea { font: inherit; color: inherit; }
 @keyframes turn { to { transform: rotate(360deg); } }
 
 /* ── 속이기 화면 ── */
-.play { --t: var(--low); --ts: var(--low-soft); display: grid; grid-template-rows: auto auto auto 1fr; gap: .7rem; height: 100vh; padding: 1rem 2rem; }
+.play { --t: var(--low); --ts: var(--low-soft); display: flex; flex-direction: column; gap: .7rem; height: 100vh; padding: 1rem 2rem; }
+.play .chat { flex: 1; }
+.tips { background: #fff6dc; border: 2px solid var(--edge); border-radius: 1rem; padding: .5rem 1rem; }
+.tips summary { font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: .5rem; }
+.tips-new { font-size: .8rem; background: var(--ink); color: #fff; border-radius: 999px; padding: .05rem .6rem; }
+.tips ul { margin: .4rem 0 .2rem; padding-left: 1.2rem; display: flex; flex-direction: column; gap: .15rem; color: var(--ink-2); font-size: .95rem; }
 .play.tier-top { --t: var(--top); --ts: var(--top-soft); }
 .play-head { display: flex; justify-content: space-between; align-items: center; }
 .stage-steps { display: flex; align-items: center; gap: .5rem; font-weight: 800; }

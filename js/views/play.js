@@ -4,6 +4,7 @@ import { MAX_QUESTIONS, MAX_QUESTION_CHARS, MAX_STARS, STAR_RULES, starsFor } fr
 import { TIERS } from '../missions.js';
 import { chat, judge } from '../api.js';
 import { factsFor } from '../checker.js';
+import { tipsFor } from '../tips.js';
 import { touch } from '../activity.js';
 import { h, clear, markdown, starRow, toast, autoGrow } from '../ui.js';
 
@@ -13,6 +14,8 @@ export function playView({ game, tier, onNext }) {
   const model = MODELS[tier];
   const mission = set.mission;
   const { bonus } = set;
+  const { tipsFrom } = player.cfg;
+  const showTips = tipsFrom > 0 && set.no >= tipsFrom;
   const plus = () => bonus > 0 && h('span.bonus', `+${bonus}`);
   let busy = false;
   let aborter = null;
@@ -201,6 +204,9 @@ export function playView({ game, tier, onNext }) {
       h('span.mission-icon', mission.icon),
       h('div.mission-text', h('b', mission.title), h('span', mission.brief)),
       h('span.mission-tier', TIERS[mission.tier].name, bonus > 0 && ` · 성공하면 +${bonus}`)),
+    showTips && h('details.tips', { open: true },
+      h('summary', '💡 속이기 팁', set.no === tipsFrom && h('span.tips-new', '이번 세트부터!')),
+      h('ul', tipsFor(mission).map((t) => h('li', t)))),
     meter,
     h('main.chat', log, endBox, composer));
 

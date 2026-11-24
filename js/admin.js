@@ -81,12 +81,14 @@ function settingsSection(st) {
   const bonus = Object.fromEntries([1, 2, 3].map((t) => [t, select(st.bonus[t], R.bonus, '개')]));
   const idle = numInput(st.idleSec, R.idleSec);
   const boardSize = select(st.boardSize, R.boardSize, '명');
+  const tipsFrom = h('select.input.num', Array.from({ length: R.tipsFrom[1] + 1 }, (_, v) =>
+    h('option', { value: v, selected: v === st.tipsFrom }, v === 0 ? '안 보여 줌' : `${v}세트부터`)));
   const notice = h('input.input', { value: st.notice, maxLength: R.notice, placeholder: '예) 한 사람당 3세트까지! 뒤에 기다리는 친구를 배려해 주세요' });
 
   const save = () => call({
     action: 'settings',
     settings: {
-      sets: +sets.value, rerolls: +rerolls.value, idleSec: +idle.value, boardSize: +boardSize.value, notice: notice.value,
+      sets: +sets.value, rerolls: +rerolls.value, idleSec: +idle.value, boardSize: +boardSize.value, tipsFrom: +tipsFrom.value, notice: notice.value,
       bonus: Object.fromEntries(Object.entries(bonus).map(([t, el]) => [t, +el.value])),
     },
   }, '설정을 저장했어요');
@@ -96,6 +98,7 @@ function settingsSection(st) {
       field('한 사람당 세트 수', sets, '세트 = 미션 고르기 → 하위 모델 → 최상위 모델'),
       field('카드 다시 돌리기', rerolls, '카드 한 장을 세트마다 다시 돌릴 수 있는 횟수 (0이면 버튼이 사라져요)'),
       ...[1, 2, 3].map((t) => field(`${TIERS[t].name} 카드 보너스`, bonus[t], '속인 모델마다 더하는 별')),
+      field('속이기 팁', tipsFrom, '대화 화면에 미션 종류에 맞는 팁을 보여 줘요'),
       field('랭킹 표시 인원', boardSize, '대기 화면·결과 화면에 보여 줄 순위 수'),
       field('방치 확인 시간(초)', idle, `입력이 없으면 "계속할까요?"를 띄워요 (${R.idleSec[0]}~${R.idleSec[1]}초)`)),
     field('대기 화면 공지', notice, `대기 화면 맨 위에 보여요. 비우면 안 보여요 (${R.notice}자까지)`),

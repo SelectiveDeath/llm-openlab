@@ -33,6 +33,7 @@ export const DEFAULT_SETTINGS = {
   notice: '', // 대기 화면 맨 위에 띄울 안내
   idleSec: 90, // 입력이 없을 때 "계속할까요?"를 띄우기까지 걸리는 시간(초)
   boardSize: 10, // 랭킹에 보여 줄 인원
+  tipsFrom: 2, // 몇 번째 세트부터 속이기 팁을 보여 줄지 (0이면 안 보여 줌)
 };
 
 // 설정값의 허용 범위
@@ -42,6 +43,7 @@ export const SETTING_RANGES = {
   bonus: [0, 5],
   idleSec: [30, 600],
   boardSize: [3, 30],
+  tipsFrom: [0, 5],
   notice: 80, // 글자 수
 };
 
@@ -62,6 +64,7 @@ export function normalizeSettings(raw) {
     notice: typeof s.notice === 'string' ? s.notice.trim().slice(0, R.notice) : D.notice,
     idleSec: int(s.idleSec, R.idleSec, D.idleSec),
     boardSize: int(s.boardSize, R.boardSize, D.boardSize),
+    tipsFrom: int(s.tipsFrom, R.tipsFrom, D.tipsFrom),
   };
 }
 
